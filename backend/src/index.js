@@ -11,6 +11,7 @@ import likeRoutes from './routes/likes.js';
 import notifRoutes from './routes/notifications.js';
 import clientRoutes from './routes/client.js';
 import suiviRoutes from './routes/suivis.js';
+import nutritionistRoutes from './routes/nutritionist.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/commentaires', commentRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/notifications', notifRoutes);
 app.use('/api/client', clientRoutes);
+app.use('/api/nutritionist', nutritionistRoutes);
 app.use('/api/suivis', suiviRoutes);
 
 app.get('/', (req, res) => {

@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "Nutrition API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Register",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "url": {"raw": "{{baseUrl}}/api/register"},
+        "body": {"mode":"raw","raw":"{\n  \"name\":\"John\",\n  \"email\":\"john@example.com\",\n  \"password\":\"secret\"\n}"}
+      }
+    },
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "url": {"raw": "{{baseUrl}}/api/login"},
+        "body": {"mode":"raw","raw":"{\n  \"email\":\"john@example.com\",\n  \"password\":\"secret\"\n}"}
+      }
+    },
+    {
+      "name": "List Programmes",
+      "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/programmes"}}
+    }
+  ]
+}
