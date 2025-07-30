@@ -6,3 +6,10 @@ export const programmeSchema = Joi.object({
   objective: Joi.string().required(),
   image: Joi.string().optional(),
 });
+
+export const programmeUpdateSchema = Joi.object({
+  title: Joi.string(),
+  description: Joi.string(),
+  objective: Joi.string(),
+  image: Joi.string(),
+});

@@ -34,6 +34,22 @@ export const getCommentsForTarget = async (req, res) => {
   res.json(comments);
 };
 
+export const getCommentsReceived = async (req, res) => {
+  const programmes = await prisma.programme.findMany({ where: { created_by: req.user.id }, select: { id: true } });
+  const plats = await prisma.plat.findMany({ where: { created_by: req.user.id }, select: { id: true } });
+  const conseils = await prisma.conseil.findMany({ where: { created_by: req.user.id }, select: { id: true } });
+  const comments = await prisma.commentaire.findMany({
+    where: {
+      OR: [
+        { type: 'programme', target_id: { in: programmes.map(p => p.id) } },
+        { type: 'plat', target_id: { in: plats.map(p => p.id) } },
+        { type: 'conseil', target_id: { in: conseils.map(c => c.id) } },
+      ],
+    },
+  });
+  res.json(comments);
+};
+
 async function createNotificationForTarget(type, target_id, notifType) {
   const mapping = {
     programme: prisma.programme,
