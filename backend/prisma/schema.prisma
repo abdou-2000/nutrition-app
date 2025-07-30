@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for nutrition app
 
 generator client {
   provider = "prisma-client-js"
@@ -13,3 +9,118 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(client)
+  is_active Boolean   @default(true)
+  bio       String?   @db.Text
+  avatar    String?
+  programs  Programme[] @relation("ProgrammesCreated")
+  dishes    Plat[]      @relation("PlatsCreated")
+  conseils  Conseil[]   @relation("ConseilsCreated")
+  comments  Commentaire[]
+  likes     Like[]
+  notifications Notification[]
+  suivis    SuiviProgramme[]
+}
+
+enum Role {
+  admin
+  nutritionist
+  client
+}
+
+model Programme {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String    @db.Text
+  objective   String
+  image       String?
+  created_by  Int
+  creator     User      @relation("ProgrammesCreated", fields: [created_by], references: [id])
+  plats       Plat[]
+  conseils    Conseil[]
+  suivis      SuiviProgramme[]
+  createdAt   DateTime  @default(now())
+}
+
+model Plat {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String   @db.Text
+  image       String?
+  benefits    String?
+  is_global   Boolean  @default(false)
+  created_by  Int
+  programme_id Int?
+  creator     User     @relation("PlatsCreated", fields: [created_by], references: [id])
+  programme   Programme? @relation(fields: [programme_id], references: [id])
+}
+
+model Conseil {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String   @db.Text
+  is_global   Boolean  @default(false)
+  created_by  Int
+  programme_id Int?
+  creator     User     @relation("ConseilsCreated", fields: [created_by], references: [id])
+  programme   Programme? @relation(fields: [programme_id], references: [id])
+}
+
+model SuiviProgramme {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  programme_id Int
+  current_step Int     @default(0)
+  completed    Boolean @default(false)
+  user        User     @relation(fields: [user_id], references: [id])
+  programme   Programme @relation(fields: [programme_id], references: [id])
+}
+
+model Commentaire {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  type      PublicationType
+  target_id Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  type      PublicationType
+  target_id Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  type      NotificationType
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+}
+
+enum PublicationType {
+  programme
+  plat
+  conseil
+}
+
+enum NotificationType {
+  new_comment
+  new_like
+  new_publication
+  progression_update
+}
+
