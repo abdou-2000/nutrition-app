@@ -1,8 +1,5 @@
-// Prisma schema for nutrition app
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -10,117 +7,139 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model commentaire {
+  id        Int              @id @default(autoincrement())
+  user_id   Int
+  type      commentaire_type
+  target_id Int
+  content   String           @db.Text
+  createdAt DateTime         @default(now())
+  user      user             @relation(fields: [user_id], references: [id], map: "Commentaire_user_id_fkey")
+
+  @@index([user_id], map: "Commentaire_user_id_fkey")
+}
+
+model conseil {
+  id           Int        @id @default(autoincrement())
+  title        String
+  content      String     @db.Text
+  is_global    Boolean    @default(false)
+  created_by   Int
+  programme_id Int?
+  user         user       @relation(fields: [created_by], references: [id], map: "Conseil_created_by_fkey")
+  programme    programme? @relation(fields: [programme_id], references: [id], map: "Conseil_programme_id_fkey")
+
+  @@index([created_by], map: "Conseil_created_by_fkey")
+  @@index([programme_id], map: "Conseil_programme_id_fkey")
+}
+
+model like {
   id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  role      Role      @default(client)
-  is_active Boolean   @default(true)
-  bio       String?   @db.Text
-  avatar    String?
-  programs  Programme[] @relation("ProgrammesCreated")
-  dishes    Plat[]      @relation("PlatsCreated")
-  conseils  Conseil[]   @relation("ConseilsCreated")
-  comments  Commentaire[]
-  likes     Like[]
-  notifications Notification[]
-  suivis    SuiviProgramme[]
+  user_id   Int
+  type      like_type
+  target_id Int
+  createdAt DateTime  @default(now())
+  user      user      @relation(fields: [user_id], references: [id], map: "Like_user_id_fkey")
+
+  @@index([user_id], map: "Like_user_id_fkey")
 }
 
-enum Role {
-  admin
-  nutritionist
-  client
+model notification {
+  id        Int               @id @default(autoincrement())
+  user_id   Int
+  type      notification_type
+  message   String            @db.Text
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  user      user              @relation(fields: [user_id], references: [id], map: "Notification_user_id_fkey")
+
+  @@index([user_id], map: "Notification_user_id_fkey")
 }
 
-model Programme {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String    @db.Text
-  objective   String
-  image       String?
-  created_by  Int
-  creator     User      @relation("ProgrammesCreated", fields: [created_by], references: [id])
-  plats       Plat[]
-  conseils    Conseil[]
-  suivis      SuiviProgramme[]
-  createdAt   DateTime  @default(now())
-}
-
-model Plat {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String   @db.Text
-  image       String?
-  benefits    String?
-  is_global   Boolean  @default(false)
-  created_by  Int
+model plat {
+  id           Int        @id @default(autoincrement())
+  title        String
+  description  String     @db.Text
+  image        String?
+  benefits     String?
+  is_global    Boolean    @default(false)
+  created_by   Int
   programme_id Int?
-  creator     User     @relation("PlatsCreated", fields: [created_by], references: [id])
-  programme   Programme? @relation(fields: [programme_id], references: [id])
+  user         user       @relation(fields: [created_by], references: [id], map: "Plat_created_by_fkey")
+  programme    programme? @relation(fields: [programme_id], references: [id], map: "Plat_programme_id_fkey")
+
+  @@index([created_by], map: "Plat_created_by_fkey")
+  @@index([programme_id], map: "Plat_programme_id_fkey")
 }
 
-model Conseil {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String   @db.Text
-  is_global   Boolean  @default(false)
-  created_by  Int
-  programme_id Int?
-  creator     User     @relation("ConseilsCreated", fields: [created_by], references: [id])
-  programme   Programme? @relation(fields: [programme_id], references: [id])
+model programme {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String           @db.Text
+  objective      String
+  image          String?
+  created_by     Int
+  createdAt      DateTime         @default(now())
+  conseil        conseil[]
+  plat           plat[]
+  user           user             @relation(fields: [created_by], references: [id], map: "Programme_created_by_fkey")
+  suiviprogramme suiviprogramme[]
+
+  @@index([created_by], map: "Programme_created_by_fkey")
 }
 
-model SuiviProgramme {
-  id           Int      @id @default(autoincrement())
+model suiviprogramme {
+  id           Int       @id @default(autoincrement())
   user_id      Int
   programme_id Int
-  current_step Int     @default(0)
-  completed    Boolean @default(false)
-  user        User     @relation(fields: [user_id], references: [id])
-  programme   Programme @relation(fields: [programme_id], references: [id])
+  current_step Int       @default(0)
+  completed    Boolean   @default(false)
+  programme    programme @relation(fields: [programme_id], references: [id], map: "SuiviProgramme_programme_id_fkey")
+  user         user      @relation(fields: [user_id], references: [id], map: "SuiviProgramme_user_id_fkey")
+
+  @@index([programme_id], map: "SuiviProgramme_programme_id_fkey")
+  @@index([user_id], map: "SuiviProgramme_user_id_fkey")
 }
 
-model Commentaire {
-  id        Int      @id @default(autoincrement())
-  user_id   Int
-  type      PublicationType
-  target_id Int
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [user_id], references: [id])
+model user {
+  id             Int              @id @default(autoincrement())
+  name           String
+  email          String           @unique(map: "User_email_key")
+  password       String
+  role           user_role        @default(client)
+  is_active      Boolean          @default(true)
+  bio            String?          @db.Text
+  avatar         String?
+  commentaire    commentaire[]
+  conseil        conseil[]
+  like           like[]
+  notification   notification[]
+  plat           plat[]
+  programme      programme[]
+  suiviprogramme suiviprogramme[]
 }
 
-model Like {
-  id        Int      @id @default(autoincrement())
-  user_id   Int
-  type      PublicationType
-  target_id Int
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [user_id], references: [id])
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  user_id   Int
-  type      NotificationType
-  message   String   @db.Text
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [user_id], references: [id])
-}
-
-enum PublicationType {
+enum commentaire_type {
   programme
   plat
   conseil
 }
 
-enum NotificationType {
+enum like_type {
+  programme
+  plat
+  conseil
+}
+
+enum notification_type {
   new_comment
   new_like
   new_publication
   progression_update
 }
 
+enum user_role {
+  admin
+  nutritionist
+  client
+}

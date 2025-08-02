@@ -5,8 +5,11 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "node src/index.js",
-    "seed": "node prisma/seed.js"
+    "dev": "node src/prisma-server.js",
+    "start": "node src/prisma-server.js",
+    "seed": "node prisma/seed.js",
+    "test": "node src/minimal-server.js",
+    "test-api": "node test-api.js"
   },
   "keywords": [],
   "author": "",
